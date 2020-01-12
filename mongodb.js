@@ -15,13 +15,12 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true , useUnifiedTopology:
     //INSERTING DATA/////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////INSERT ONE USER/////////////////////////////////////////////////////////////////
     // db.collection('users').insertOne({
-    //     name: "Eca",
-    //     age: 32
-    // }, (error , result)=>{
-    //     if(error){
-    //         return console.log("Unable to insert user");
-    //     }
+    //     name: "Marina",
+    //     age: 33
+    // }).then((result)=>{
     //     console.log(result.ops);
+    // }).catch((error)=>{
+    //     console.log(error);
     // });
     /////////////////////////////////////////////////////////////////INSERT SEVERAL USERS/////////////////////////////////////////////////////////////////
     // db.collection('users').insertMany([
@@ -75,17 +74,49 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true , useUnifiedTopology:
     //     }); 
     /////UPDATE DATA//////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////UPDATE ONE /////////////////////////////////////////////////////////////////
-        db.collection('users').updateOne({
-            _id: new ObjectID("5e174eb961ef6a026c8023ca")
-        } , {
-            $set:{
-                age:30
-            }
-        }).then((result)=>{
-            console.log(result.modifiedCount);
-        }).catch((error)=>{
-            console.log(error);
-        });
-    ////////////////////////////////////////////////////////////////////UPDATE MANY /////////////////////////////////////////////////////////////////
+    //     db.collection('users').updateOne({
+    //         _id: new ObjectID("5e174eb961ef6a026c8023ca")
+    //     } , {
+    //         $set:{
+    //             age:30
+    //         }
+    //     }).then((result)=>{
+    //         console.log(result.modifiedCount);
+    //     }).catch((error)=>{
+    //         console.log(error);
+    //     });
+    // ////////////////////////////////////////////////////////////////////UPDATE MANY /////////////////////////////////////////////////////////////////
+    //     db.collection('tasks').updateMany({
+    //         completed:false
+    //     },{
+    //         $set:{
+    //             completed:true
+    //         }
+    //     }).then((result)=>{
+    //         console.log(result.modifiedCount);
+    //     }).catch((error)=>{
+    //         console.log(error);
+    //     });
+    //   
+    /////DELETE DATA//////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////DELETE MANY /////////////////////////////////////////////////////////////////
 
-      });
+    //     db.collection('users').deleteMany({
+    //         age:35
+    //     }).then((result)=>{
+    //         console.log(result.deletedCount);
+    //     }).catch((error=>{
+    //         console.log(error);
+    //     }));
+    // ////////////////////////////////////////////////////////////////////DELETE ONE /////////////////////////////////////////////////////////////////
+
+    //     db.collection('tasks').deleteOne({
+    //         description:"Wash dishes"
+    //     }).then((result)=>{
+    //         console.log(result.deletedCount);
+    //     }).catch((error)=>{
+    //         console.log('error');
+    //     });
+
+
+});
