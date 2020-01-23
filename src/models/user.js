@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 
-const User = mongoose.model('User', {
+//Creating an schema allows me to proces the data beefore is saved
+const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -39,6 +41,21 @@ const User = mongoose.model('User', {
              };
          }
     }
-});
+})
+
+//Function to acces the schema an operating before is saved
+userSchema.pre('save' , async function(next){
+    const user = this;
+
+    if(user.isModified('password')){
+        user.password = await bcrypt.hash(user.password , 8);  
+    }
+
+
+    next();//ends code execution
+})
+
+//Creates the user model
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
