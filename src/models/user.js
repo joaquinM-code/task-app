@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 
 //Creating an schema allows me to proces the data beefore is saved
 const userSchema = new mongoose.Schema({
@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     email:{
         type: String,
+        unique:true,
         required: true,
         trim:true,
         lowercase:true,
@@ -40,8 +41,69 @@ const userSchema = new mongoose.Schema({
                  throw new Error('The word "password" in not accepted');
              };
          }
-    }
+    },
+    tokens:[{
+        token:{
+            type: String,
+            required: true,
+        }
+    }]
 })
+//Setting a virtual model to asociate the tasks with the user
+//Virtual relationships are not stored in the DB are used by mongoose to retrive the data when is neded and return an array of the retreived data
+    userSchema.virtual('tasks', {
+        //The keys on the lines beelow must be litteral in order to work
+        ref: 'Task',
+        localField:'_id',
+        foreignField:'owner'
+    })
+
+
+
+
+
+
+//By setting up a value for methods latter we can access it calling nameOfInstance.nameOfTheValue methods are accesible in the instances of the model
+userSchema.methods.generateAuthToken = async function(){
+    const user = this;
+    const token = jwt.sign({ _id: user._id.toString() } , 'secretFrase');
+
+    user.tokens = user.tokens.concat({token});
+    await user.save();
+
+    return token;
+}
+
+//Creating function to send only public profile back to users
+//We are refactoting toJSON method so it deletes every sensible data(see playground)
+userSchema.methods.toJSON = function(){
+    const user = this;
+    const userObject = user.toObject();
+    delete userObject.password;
+    delete userObject.tokens;
+    delete userObject._id;
+    delete userObject.__v;
+
+    return userObject;
+}
+
+
+//By setting up a value for statics latter we can access it calling User.nameOfTheValue static methods are accesible in the model
+userSchema.statics.findByCredentials = async (email , password)=>{
+    
+    const user = await User.findOne({email});
+    if(!user){
+        throw new Error('Unable to login');
+    }
+
+    const isMatch = await bcrypt.compare(password , user.password);
+    if(!isMatch){
+        throw new Error('Unable to login');
+    }
+
+    return user;
+} 
+
 
 //Function to acces the schema an operating before is saved
 userSchema.pre('save' , async function(next){
