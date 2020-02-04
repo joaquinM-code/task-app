@@ -2,11 +2,13 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('./task');
 
 //Creating an schema allows me to proces the data beefore is saved
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
+        unique:true,
         required: true,
         trim: true
     },
@@ -47,7 +49,12 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true,
         }
-    }]
+    }],
+    avatar:{
+        type: Buffer
+    }
+} ,{
+    timestamps : true//set timestamp in the DB
 })
 //Setting a virtual model to asociate the tasks with the user
 //Virtual relationships are not stored in the DB are used by mongoose to retrive the data when is neded and return an array of the retreived data
@@ -66,7 +73,7 @@ const userSchema = new mongoose.Schema({
 //By setting up a value for methods latter we can access it calling nameOfInstance.nameOfTheValue methods are accesible in the instances of the model
 userSchema.methods.generateAuthToken = async function(){
     const user = this;
-    const token = jwt.sign({ _id: user._id.toString() } , 'secretFrase');
+    const token = jwt.sign({ _id: user._id.toString() } , process.env.JWT_SECRET);
 
     user.tokens = user.tokens.concat({token});
     await user.save();
@@ -83,6 +90,7 @@ userSchema.methods.toJSON = function(){
     delete userObject.tokens;
     delete userObject._id;
     delete userObject.__v;
+    delete userObject.avatar;
 
     return userObject;
 }
@@ -105,7 +113,7 @@ userSchema.statics.findByCredentials = async (email , password)=>{
 } 
 
 
-//Function to acces the schema an operating before is saved
+//Middleware to acces the schema an operating before is saved 
 userSchema.pre('save' , async function(next){
     const user = this;
 
@@ -114,7 +122,14 @@ userSchema.pre('save' , async function(next){
     }
 
 
-    next();//ends code execution
+    next();//ends middleware execution and allow the rest of route the code to continue
+})
+
+//Middleware to delete user tasks if user is removed
+userSchema.pre('remove' , async function(next){
+    const user = this;
+    await Task.deleteMany({ owner : user._id});
+    next();
 })
 
 //Creates the user model

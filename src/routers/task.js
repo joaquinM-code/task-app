@@ -25,22 +25,53 @@ router.post('/tasks' , auth , async(req , res)=>{
 })
 
 //Reading all tasks
-router.get('/tasks' , async(req , res)=>{
+///FETCHING TASK BY COMPLETED OR INCOPLETED//////
+//GET /task?completed=true or flase
+
+///FETCHING TASK WITH PAGINATION//////
+//GET /task?limit=integer&skip=integer
+//skip tells me wich set o results I get, for example if a I limit to 10 and skip=10 I get the second 10 matches
+
+///FETCHING TASK AND SORTING BY DATE OF CREATION ASCENDING AND DESCENDING//////
+//GET /tasks?sortBy=createdAt:asc OR //GET /tasks?sortBy=createdAt:desc
+
+router.get('/tasks' , auth , async(req , res)=>{
+    const match = {};
+    const sort = {};
+    if(req.query.completed){
+        match.completed = req.query.completed === 'true';
+    }
+    if(req.query.sortBy){
+        const parts = req.query.sortBy.split(':');
+        sort[parts[0]] = parts[1]==='desc'? -1 : 1;
+    }
+
     
     try{
-        const tasks = await Task.find({});
-        res.send(tasks);
+        //Customize populate to receive url parameters
+        await req.user.populate({
+            path : 'tasks',//Tells populate to match the tasks parameter
+            match,
+            options:{
+                limit: parseInt(req.query.limit),//if no number provided limit = undefined , so no limit
+                skip: parseInt(req.query.skip),
+                sort
+            }
+        }).execPopulate();
+        res.send(req.user.tasks);
     }catch(error){
         res.status(500).send();
     }
 })
 
 //Reading one task by id
-router.get('/tasks/:id' , async(req , res)=>{
+router.get('/tasks/:id' , auth , async(req , res)=>{
     const _id = req.params.id;
     
     try{
-        const task = await Task.findById(_id);
+        //Fetch task by id and user id so only the creator can find his tasks
+        const task = await Task.findOne({_id , owner: req.user._id});
+
         if(!task){
             return res.status(404).send();
         }
@@ -51,7 +82,7 @@ router.get('/tasks/:id' , async(req , res)=>{
 })
 
 //Updating task by id
-router.patch('/tasks/:id' , async (req , res )=>{
+router.patch('/tasks/:id' , auth,  async (req , res )=>{
     const _id = req.params.id;
     
     const updates = Object.keys(req.body);
@@ -64,14 +95,13 @@ router.patch('/tasks/:id' , async (req , res )=>{
 
     try{
 
-        const task = await Task.findById(_id);
-        updates.forEach((update)=>task[update] = req.body[update]);
-        await task.save();
+        const task = await Task.findOne({_id , owner : req.user._id});
 
-        //const task = await Task.findByIdAndUpdate(_id , req.body , {new:true , runValidators:true});
         if(!task){
             return res.status(404).send();
         }
+        updates.forEach((update)=>task[update] = req.body[update]);
+        await task.save();
         res.send(task);
 
     }catch(error){
@@ -81,10 +111,10 @@ router.patch('/tasks/:id' , async (req , res )=>{
 
 
 //delete task by id
-router.delete('/tasks/:id' , async (req , res)=>{
+router.delete('/tasks/:id' , auth , async (req , res)=>{
     const _id = req.params.id;
     try{
-        const task = await Task.findByIdAndDelete(_id);
+        const task = await Task.findOneAndDelete({_id , owner: req.user._id});
         if(!task){
             return res.status(404).send();
         }

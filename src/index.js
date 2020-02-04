@@ -3,9 +3,13 @@ require('./db/mongoose.js');
 const taskRouter = require('./routers/task');
 const userRouter = require('./routers/user');
 
+
 //Seting server
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
+
+
+
 
 //Seting up middleware
 //We declare the function, unlike the next app.use is not express native
