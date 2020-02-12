@@ -1,0 +1,63 @@
+//Test function contains 2 arguments  the name of the test and a function
+
+//It runs the code inside the function and if the code fails, so does the test
+
+const {calculateTip , fahrenheitToCelsius , celsiusToFahrenheit , add} = require('../src/math');
+
+test('Should calculate total + tip', () =>{
+    const total = calculateTip(10 , 0.3)
+
+    // if(total != 13){
+    //     throw new Error(`Total tip should be 13. Got ${total}`);
+    // }
+
+    //For a better way to use, and avoid conditionals use the following
+    expect(total).toBe(13);
+})
+// test('Should calculete total + default tip' , ()=>{
+//     const total = calculateTip(10);
+//     expect(total).toBe(12.5);
+// })
+
+
+// test('Should convert 32 F to 0 C' , ()=>{
+//     const result = fahrenheitToCelsius(32);
+//     expect(result).toBe(0);
+// })
+
+// test('Should convert 0 C to 32 F' , ()=>{
+//     const result = celsiusToFahrenheit(0);
+//     expect(result).toBe(32);
+// })
+
+// //For asyncronous test you have to call done when the function has already finished otherwise it does not run the async code
+// test('async test demo' , (done)=>{
+
+//     setTimeout(()=>{
+//         expect(1).toBe(1);
+//         done();
+//     },2000)
+    
+// })
+
+
+// ///Promises testing
+// test('Should add two numbers' , (done)=>{
+//     add(2 , 3).then((sum)=>{
+//         expect(sum).toBe(5);
+//         done();
+//     })
+// })
+
+
+// //async await testing //the most common
+// test('add two numbers async await' , async ()=>{
+//     const sum = await add(10, 2);
+//     expect(sum).toBe(12);
+// })
+
+
+// "jest":{ 
+//     "testEnvironment":"node"
+//   }
+// dont forget to add the linea above in package.json
